@@ -4,13 +4,14 @@ from PIL import Image, ImageTk
 import tkinter.filedialog
 import os
 import tkinter.messagebox
-from tkinter import font,ttk
+from tkinter import font, ttk
+
 # --------------------------------------------------------------------------------------
 # Global Variables Space
 file_name = None
 PROGRAM_NAME = "MarcoEditor"
-current_font_family='Arial'
-current_font_size=12
+current_font_family = 'Arial'
+current_font_size = 12
 # --------------------------------------------------------------------------------------
 
 root = tk.Tk()
@@ -109,12 +110,17 @@ def search_output(needle, if_ignore_case, content_text, search_toplevel, search_
     search_box.focus_set()
     search_toplevel.title('{} matches found'.format(matches_found))
 
-
+save_status=True
 def new_file(event=None):
+    global save_status
+    if save_status==False:
+        if tk.messagebox.askokcancel("Unsaved?", "DO YOU WANT TO SAVE CURRENT FILE ?"):
+            save()
     root.title("Untitled-MacroEditor")
     global file_name
     file_name = None
     content_text.delete(1.0, tk.END)
+    save_status = False
 
 
 def open_file(event=None):
@@ -143,13 +149,18 @@ def save_as(event=None):
                                                            filetypes=[("AllFiles", "*.*"), ("Text Document", "*.txt")])
     if input_file_name:
         global file_name
+        global save_status
+        save_status = True
         file_name = input_file_name
         write_to_file(file_name)
         root.title('{}-{}'.format(os.path.basename(file_name), PROGRAM_NAME))
     return 'break'
 
+
 def save(event=None):
     global file_name
+    global save_status
+    save_status=True
     if not file_name:
         save_as()
     else:
@@ -158,57 +169,64 @@ def save(event=None):
 
 
 def help_box(event=None):
-    tkinter.messagebox.showinfo("Help","Use the White Space to write your content and use the menu options to perform operations on your content.")
+    tkinter.messagebox.showinfo("Help",
+                                "Use the White Space to write your content and use the menu options to perform operations on your content.")
+
 
 def about_box(event=None):
-    tkinter.messagebox.showinfo("About","Developed by YASH DABHADE . COPYRIGHTS 2020")
+    tkinter.messagebox.showinfo("About", "Developed by YASH DABHADE . COPYRIGHTS 2020")
+
 
 def exit_box(event=None):
-    if tk.messagebox.askokcancel("Really Quit?","DO YOU WANT TO EXIT ?"):
+    if tk.messagebox.askokcancel("Really Quit?", "DO YOU WANT TO EXIT ?"):
         root.destroy()
 
 
 def get_line_numbers():
-    output=""
+    output = ""
     if show_line_number.get():
-        row,col=content_text.index('end').split('.')
-        for i in range(1,int(row)):
-            output+=str(i)+'\n'
+        row, col = content_text.index('end').split('.')
+        for i in range(1, int(row)):
+            output += str(i) + '\n'
     return output
 
+
 def update_line_numbers(event=None):
-    line_numbers=get_line_numbers()
+    line_numbers = get_line_numbers()
     linenumber_bar.config(state='normal')
-    linenumber_bar.delete('1.0','end')
-    linenumber_bar.insert('1.0',line_numbers)
+    linenumber_bar.delete('1.0', 'end')
+    linenumber_bar.insert('1.0', line_numbers)
     linenumber_bar.config(state='disabled')
+
 
 def show_cursor_info_fun():
     if show_cursor_info.get():
-        cursor_info_bar.pack(expand=tk.NO,fill=None,side=tk.RIGHT,anchor='se')
+        cursor_info_bar.pack(expand=tk.NO, fill=None, side=tk.RIGHT, anchor='se')
     else:
         cursor_info_bar.pack_forget()
 
+
 def update_cursorinfo_bar(event=None):
-    row,col=content_text.index(tk.INSERT).split('.')
-    line_num,col_num=str(int(row)),str(int(col)+1)
-    infotext="Line: {0} | Column: {1}".format(line_num,col_num)
+    row, col = content_text.index(tk.INSERT).split('.')
+    line_num, col_num = str(int(row)), str(int(col) + 1)
+    infotext = "Line: {0} | Column: {1}".format(line_num, col_num)
     cursor_info_bar.config(text=infotext)
+
 
 def on_content_changed(event=None):
     update_line_numbers()
     update_cursorinfo_bar()
-
-
+    linenumber_bar.yview('end')
 
 
 def highlight_line(interval=100):
-    content_text.tag_remove("active_line",1.0,"end")
-    content_text.tag_add('active_line','insert linestart','insert lineend+1c')
-    content_text.after(interval,toogle_highlight)
+    content_text.tag_remove("active_line", 1.0, "end")
+    content_text.tag_add('active_line', 'insert linestart', 'insert lineend+1c')
+    content_text.after(interval, toogle_highlight)
+
 
 def undo_highlight():
-    content_text.tag_remove("active_line",1.0,'end')
+    content_text.tag_remove("active_line", 1.0, 'end')
 
 
 def toogle_highlight(event=None):
@@ -217,11 +235,40 @@ def toogle_highlight(event=None):
     else:
         undo_highlight()
 
+
 def changetheme(event=None):
-    selected_theme=theme_choice.get()
-    fg_bg_colors=color_schemes.get(selected_theme)
-    fgc,bgc=fg_bg_colors.split('.')
-    content_text.config(fg=fgc,bg=bgc)
+    selected_theme = theme_choice.get()
+    fg_bg_colors = color_schemes.get(selected_theme)
+    fgc, bgc = fg_bg_colors.split('.')
+    content_text.config(fg=fgc, bg=bgc)
+
+#Making bold,italic and underline funtions and configurations
+def change_bold():
+    text_property=tk.font.Font(font=content_text['font'])
+    print(text_property)
+    if text_property.actual()['weight'] == 'normal':
+        content_text.config(font=(current_font_family,current_font_size,'bold'))
+    elif text_property.actual()['weight'] == 'bold':
+        content_text.config(font=(current_font_family, current_font_size, 'normal'))
+
+
+def change_italic():
+    text_property = tk.font.Font(font=content_text['font'])
+    print(text_property)
+    if text_property.actual()['slant'] == 'roman':
+        content_text.config(font=(current_font_family, current_font_size, 'italic'))
+    elif text_property.actual()['slant'] == 'italic':
+        content_text.config(font=(current_font_family, current_font_size, 'roman'))
+
+def change_underline():
+    text_property = tk.font.Font(font=content_text['font'])
+    print(text_property)
+    if text_property.actual()['underline'] == 0:
+        content_text.config(font=(current_font_family, current_font_size, 'underline'))
+    elif text_property.actual()['underline'] == 1:
+        content_text.config(font=(current_font_family, current_font_size, 'normal'))
+
+
 
 # --------------------------------------------------------------------------------------
 
@@ -232,13 +279,13 @@ menu_bar = tk.Menu(root)
 # Making File Menu
 file_menu = tk.Menu(menu_bar, tearoff=0)
 
-file_menu.add_command(underline=0, label="New", accelerator='Ctrl+N', compound='left', image=new_icon,command=new_file)
+file_menu.add_command(underline=0, label="New", accelerator='Ctrl+N', compound='left', image=new_icon, command=new_file)
 file_menu.add_separator()
-file_menu.add_command(label="Open", accelerator='Ctrl+O', compound='left', image=open_icon,command=open_file)
-file_menu.add_command(label="Save", accelerator='Ctrl+S', compound='left', image=save_icon,command=save)
-file_menu.add_command(label="SaveAs", accelerator='Shift+Ctrl+S', compound='left', image=saveas_icon,command=save_as)
+file_menu.add_command(label="Open", accelerator='Ctrl+O', compound='left', image=open_icon, command=open_file)
+file_menu.add_command(label="Save", accelerator='Ctrl+S', compound='left', image=save_icon, command=save)
+file_menu.add_command(label="SaveAs", accelerator='Shift+Ctrl+S', compound='left', image=saveas_icon, command=save_as)
 file_menu.add_separator()
-file_menu.add_command(label="Exit", accelerator='Alt+F4', compound='left', image=exit_icon,command=exit_box)
+file_menu.add_command(label="Exit", accelerator='Alt+F4', compound='left', image=exit_icon, command=exit_box)
 # Cascading File menu in the menu Bar
 menu_bar.add_cascade(label="File", menu=file_menu)
 # --------------------------------------------------------------------------------------
@@ -265,9 +312,11 @@ show_line_number.set(1)
 view_menu.add_checkbutton(label="Show Line Numbers", variable=show_line_number)
 show_cursor_info = tk.IntVar()
 show_cursor_info.set(1)
-view_menu.add_checkbutton(label="Show Cursor Location At bottom", variable=show_cursor_info,command=show_cursor_info_fun)
+view_menu.add_checkbutton(label="Show Cursor Location At bottom", variable=show_cursor_info,
+                          command=show_cursor_info_fun)
 to_highlight_line = tk.BooleanVar()
-view_menu.add_checkbutton(label="Highlight Current Line", onvalue=1, offvalue=0, variable=to_highlight_line,command=toogle_highlight)
+view_menu.add_checkbutton(label="Highlight Current Line", onvalue=1, offvalue=0, variable=to_highlight_line,
+                          command=toogle_highlight)
 # Making Themes Menu is View menu
 # --------------------------------------------------------------------------------------
 themes_menu = tk.Menu(menu_bar, tearoff=0)
@@ -287,13 +336,13 @@ color_schemes = {
     'Dark': '#c4c4c4.#2d2d2d',
     'Olive Green': '#D1E7E0.#5B8340',
     'Night Mode': '#FFFFFF.#000000',
-    'Monokai':'#d3b774.#474747',
-    'Night Blue':'#ededed.#6b9dc2'
+    'Monokai': '#d3b774.#474747',
+    'Night Blue': '#ededed.#6b9dc2'
 }
 theme_choice = tk.StringVar()
 theme_choice.set('Default')
 for k in sorted(color_schemes):
-    themes_menu.add_radiobutton(label=k, variable=theme_choice,command=changetheme)
+    themes_menu.add_radiobutton(label=k, variable=theme_choice, command=changetheme)
 # Cascading VIew Menu in the Menu Bar
 menu_bar.add_cascade(label="View", menu=view_menu)
 
@@ -302,8 +351,8 @@ menu_bar.add_cascade(label="View", menu=view_menu)
 # making Help Menu
 about_menu = tk.Menu(menu_bar, tearoff=0)
 
-about_menu.add_command(label="About",command=about_box)
-about_menu.add_command(label="Help",command=help_box)
+about_menu.add_command(label="About", command=about_box)
+about_menu.add_command(label="Help", command=help_box)
 # Cascading VIew Menu in the Menu Bar
 menu_bar.add_cascade(label="About", menu=about_menu)
 # --------------------------------------------------------------------------------------
@@ -315,110 +364,114 @@ root.config(menu=menu_bar)
 # Making Shortcut Bar
 shorcut_bar = tk.Frame(root, height=25, background='light sea green')
 shorcut_bar.pack(expand='no', fill='x')
-#Creating Shortcut Buttons
-icons=('new_file','open_file','save','cut','copy','paste','undo','redo','find_text')
-for i,icon in enumerate(icons):
-    tool_bar_icon=tk.PhotoImage(file='icons/{}.png'.format(icon))
-    cmd=eval(icon)
-    tool_bar=tk.Button(shorcut_bar,image=tool_bar_icon,command=cmd)
-    tool_bar.image=tool_bar_icon
+# Creating Shortcut Buttons
+icons = ('new_file', 'open_file', 'save', 'cut', 'copy', 'paste', 'undo', 'redo', 'find_text')
+for i, icon in enumerate(icons):
+    tool_bar_icon = tk.PhotoImage(file='icons/{}.png'.format(icon))
+    cmd = eval(icon)
+    tool_bar = tk.Button(shorcut_bar, image=tool_bar_icon, command=cmd)
+    tool_bar.image = tool_bar_icon
     tool_bar.pack(side="left")
 
-#-------------------------------------------------------------------------------------------------------
-#Making Customize Bar
-customize_bar=tk.Frame(root,height=40,background='lightcyan')
-customize_bar.pack(expand='no',fill='x')
+# -------------------------------------------------------------------------------------------------------
+# Making Customize Bar
+customize_bar = tk.Frame(root, height=40, background='lightcyan')
+customize_bar.pack(expand='no', fill='x')
 
-#MAking font box_______
-font_tuple=tk.font.families()
-font_family=tk.StringVar()
-font_box=ttk.Combobox(customize_bar,width=30,textvariable=font_family,state='readonly')
-font_box['values']=font_tuple
+# MAking font box_______
+font_tuple = tk.font.families()
+font_family = tk.StringVar()
+font_box = ttk.Combobox(customize_bar, width=30, textvariable=font_family, state='readonly')
+font_box['values'] = font_tuple
 font_box.current(font_tuple.index('Arial'))
-font_box.grid(row=0,column=0,ipady=10,padx=10)
+font_box.grid(row=0, column=0, ipady=10, padx=10)
 
-#Making Size Box
-size_var=tk.IntVar()
-font_size=ttk.Combobox(customize_bar,width=10,textvariable=size_var,state='readonly')
-font_size['values']=tuple(range(2,120,2))
+# Making Size Box
+size_var = tk.IntVar()
+font_size = ttk.Combobox(customize_bar, width=10, textvariable=size_var, state='readonly')
+font_size['values'] = tuple(range(2, 120, 2))
 font_size.current(7)
-font_size.grid(row=0,column=2,ipady=10,padx=10)
+font_size.grid(row=0, column=2, ipady=10, padx=10)
 
-#Making Bold Button
-bold_icon=ImageTk.PhotoImage(Image.open('icons2/bold.png'))
-bold_btn=ttk.Button(customize_bar,image=bold_icon)
-bold_btn.grid(row=0,column=5,padx=2,pady=5)
+# Making Bold Button
+bold_icon = ImageTk.PhotoImage(Image.open('icons2/bold.png'))
+bold_btn = ttk.Button(customize_bar, image=bold_icon,command=change_bold)
+bold_btn.grid(row=0, column=5, padx=2, pady=5)
 
-#MAking Italic Button
-italic_icon=ImageTk.PhotoImage(Image.open('icons2/italic.png'))
-italic_btn=ttk.Button(customize_bar,image=italic_icon)
-italic_btn.grid(row=0,column=6,padx=2,pady=5)
+# MAking Italic Button
+italic_icon = ImageTk.PhotoImage(Image.open('icons2/italic.png'))
+italic_btn = ttk.Button(customize_bar, image=italic_icon,command=change_italic)
+italic_btn.grid(row=0, column=6, padx=2, pady=5)
 
-#MAking UnderLine Button
-underline_icon=ImageTk.PhotoImage(Image.open('icons2/underline.png'))
-underline_btn=ttk.Button(customize_bar,image=underline_icon)
-underline_btn.grid(row=0,column=7,padx=2,pady=5)
+# MAking UnderLine Button
+underline_icon = ImageTk.PhotoImage(Image.open('icons2/underline.png'))
+underline_btn = ttk.Button(customize_bar, image=underline_icon,command=change_underline)
+underline_btn.grid(row=0, column=7, padx=2, pady=5)
 
-#MAking color button
-color_icon=ImageTk.PhotoImage(Image.open('icons2/color.png'))
-color_btn=ttk.Button(customize_bar,image=color_icon)
-color_btn.grid(row=0,column=8,padx=22,pady=5)
+# MAking color button
+color_icon = ImageTk.PhotoImage(Image.open('icons2/color.png'))
+color_btn = ttk.Button(customize_bar, image=color_icon)
+color_btn.grid(row=0, column=8, padx=22, pady=5)
 
-#MAking align left
-alignleft_icon=ImageTk.PhotoImage(Image.open('icons2/alignleft.png'))
-alignleft_btn=ttk.Button(customize_bar,image=alignleft_icon)
-alignleft_btn.grid(row=0,column=10,padx=5,pady=5)
+# MAking align left
+alignleft_icon = ImageTk.PhotoImage(Image.open('icons2/alignleft.png'))
+alignleft_btn = ttk.Button(customize_bar, image=alignleft_icon)
+alignleft_btn.grid(row=0, column=10, padx=5, pady=5)
 
-#MAking align center
-aligncenter_icon=ImageTk.PhotoImage(Image.open('icons2/aligncenter.png'))
-aligncenter_btn=ttk.Button(customize_bar,image=aligncenter_icon)
-aligncenter_btn.grid(row=0,column=11,padx=5,pady=5)
+# MAking align center
+aligncenter_icon = ImageTk.PhotoImage(Image.open('icons2/aligncenter.png'))
+aligncenter_btn = ttk.Button(customize_bar, image=aligncenter_icon)
+aligncenter_btn.grid(row=0, column=11, padx=5, pady=5)
 
-#MAking align right
-alignright_icon=ImageTk.PhotoImage(Image.open('icons2/alignright.png'))
-alignright_btn=ttk.Button(customize_bar,image=alignright_icon)
-alignright_btn.grid(row=0,column=12,padx=5,pady=5)
+# MAking align right
+alignright_icon = ImageTk.PhotoImage(Image.open('icons2/alignright.png'))
+alignright_btn = ttk.Button(customize_bar, image=alignright_icon)
+alignright_btn.grid(row=0, column=12, padx=5, pady=5)
+
 
 # --------------------------------------------------------------------------------------
 # MakingLineNumberBar
 linenumber_bar = tk.Text(root, width=3, padx=3, takefocus=0, border=1, background='lightblue', state='disabled',
                          wrap='none')
+linenumber_bar.configure(font=(current_font_family, current_font_size))
 linenumber_bar.pack(side='left', fill='y')
-
 
 # --------------------------------------------------------------------------------------
 # Adding Text area
-content_text = tk.Text(root, wrap='word', undo=1,insertbackground="red")
+content_text = tk.Text(root, wrap='word', undo=1, insertbackground="red")
 content_text.pack(expand='yes', fill='both')
 
-#Configure font family and fot size
 
-def change_font(root):
+# Configure font family and font size
+
+def change_font(event=None):
     global current_font_size
     global current_font_family
-    current_font_size=font_size.get()
-    current_font_family=font_family.get()
-    content_text.configure(font=(current_font_family,current_font_size))
-    linenumber_bar.configure(font=(current_font_family,current_font_size))
-content_text.configure(font=(current_font_family,current_font_size))
-font_box.bind("<<ComboboxSelected>>",change_font)
-font_size.bind("<<ComboboxSelected>>",change_font)
+    current_font_size = font_size.get()
+    current_font_family = font_family.get()
+    content_text.configure(font=(current_font_family, current_font_size))
+    linenumber_bar.configure(font=(current_font_family, current_font_size))
 
-# content_text.configure(font=("Arial",12))
+
+# Setting Default Value
+content_text.configure(font=(current_font_family, current_font_size))
+# Binding the funtion to the comboxes
+font_box.bind("<<ComboboxSelected>>", change_font)
+font_size.bind("<<ComboboxSelected>>", change_font)
 
 # --------------------------------------------------------------------------------------
 
 # Adding ScrollBar
-scroll_bar = tk.Scrollbar(content_text)
+scroll_bar = tk.Scrollbar(content_text, cursor="arrow")
 content_text.configure(yscrollcommand=scroll_bar.set)
 scroll_bar.config(command=content_text.yview)
 scroll_bar.pack(side="right", fill='y')
 # --------------------------------------------------------------------------------------
 
 
-#Adding cursor Info Bar
-cursor_info_bar=tk.Label(content_text,text="Line: 1 || Column: 1")
-cursor_info_bar.pack(expand=tk.NO,fill=None,side=tk.RIGHT,anchor='se')
+# Adding cursor Info Bar
+cursor_info_bar = tk.Label(content_text, text="Line: 1 || Column: 1")
+cursor_info_bar.pack(expand=tk.NO, fill=None, side=tk.RIGHT, anchor='se')
 # --------------------------------------------------------------------------------------
 
 # Handling Shortcuts
@@ -434,9 +487,9 @@ content_text.bind('<Control-S>', save)
 content_text.bind('<Control-s>', save)
 content_text.bind('<Control-N>', new_file)
 content_text.bind('<Control-n>', new_file)
-content_text.bind('<Any-KeyPress>',on_content_changed)
-content_text.bind('<Alt-F4>',exit_box)
-#Deffining active line
+content_text.bind('<Any-KeyPress>', on_content_changed)
+content_text.bind('<Alt-F4>', exit_box)
+# Deffining active line
 content_text.tag_configure('active_line', background='lightgrey')
 # --------------------------------------------------------------------------------------
 
