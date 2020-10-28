@@ -5,6 +5,7 @@ import tkinter.filedialog
 import os
 import tkinter.messagebox
 from tkinter import font, ttk
+from tkinter import colorchooser
 
 # --------------------------------------------------------------------------------------
 # Global Variables Space
@@ -267,8 +268,33 @@ def change_underline():
         content_text.config(font=(current_font_family, current_font_size, 'underline'))
     elif text_property.actual()['underline'] == 1:
         content_text.config(font=(current_font_family, current_font_size, 'normal'))
+# --------------------------------------------------------------------------------------
 
+#Defining font color
+def font_color():
+    color=tk.colorchooser.askcolor()
+    content_text.configure(fg=color[1])
 
+# --------------------------------------------------------------------------------------
+
+#defining Alignment funtions
+def leftalignfun():
+    content=content_text.get(1.0,tk.END)
+    content_text.tag_config('left',justify=tk.LEFT)
+    content_text.delete(1.0,tk.END)
+    content_text.insert(tk.INSERT,content,'left')
+
+def rightalignfun():
+    content=content_text.get(1.0,tk.END)
+    content_text.tag_config('right',justify=tk.RIGHT)
+    content_text.delete(1.0,tk.END)
+    content_text.insert(tk.INSERT,content,'right')
+
+def centeralignfun():
+    content=content_text.get(1.0,tk.END)
+    content_text.tag_config('center',justify=tk.CENTER)
+    content_text.delete(1.0,tk.END)
+    content_text.insert(tk.INSERT,content,'center')
 
 # --------------------------------------------------------------------------------------
 
@@ -308,7 +334,7 @@ menu_bar.add_cascade(label="Edit", menu=edit_menu)
 view_menu = tk.Menu(menu_bar, tearoff=0)
 # TODO -Add View Menu Items
 show_line_number = tk.IntVar()
-show_line_number.set(1)
+show_line_number.set(0)
 view_menu.add_checkbutton(label="Show Line Numbers", variable=show_line_number)
 show_cursor_info = tk.IntVar()
 show_cursor_info.set(1)
@@ -410,22 +436,22 @@ underline_btn.grid(row=0, column=7, padx=2, pady=5)
 
 # MAking color button
 color_icon = ImageTk.PhotoImage(Image.open('icons2/color.png'))
-color_btn = ttk.Button(customize_bar, image=color_icon)
+color_btn = ttk.Button(customize_bar, image=color_icon,command=font_color)
 color_btn.grid(row=0, column=8, padx=22, pady=5)
 
 # MAking align left
 alignleft_icon = ImageTk.PhotoImage(Image.open('icons2/alignleft.png'))
-alignleft_btn = ttk.Button(customize_bar, image=alignleft_icon)
+alignleft_btn = ttk.Button(customize_bar, image=alignleft_icon,command=leftalignfun)
 alignleft_btn.grid(row=0, column=10, padx=5, pady=5)
 
 # MAking align center
 aligncenter_icon = ImageTk.PhotoImage(Image.open('icons2/aligncenter.png'))
-aligncenter_btn = ttk.Button(customize_bar, image=aligncenter_icon)
+aligncenter_btn = ttk.Button(customize_bar, image=aligncenter_icon,command=centeralignfun)
 aligncenter_btn.grid(row=0, column=11, padx=5, pady=5)
 
 # MAking align right
 alignright_icon = ImageTk.PhotoImage(Image.open('icons2/alignright.png'))
-alignright_btn = ttk.Button(customize_bar, image=alignright_icon)
+alignright_btn = ttk.Button(customize_bar, image=alignright_icon,command=rightalignfun)
 alignright_btn.grid(row=0, column=12, padx=5, pady=5)
 
 
@@ -439,7 +465,7 @@ linenumber_bar.pack(side='left', fill='y')
 # --------------------------------------------------------------------------------------
 # Adding Text area
 content_text = tk.Text(root, wrap='word', undo=1, insertbackground="red")
-content_text.pack(expand='yes', fill='both')
+
 
 
 # Configure font family and font size
@@ -462,10 +488,19 @@ font_size.bind("<<ComboboxSelected>>", change_font)
 # --------------------------------------------------------------------------------------
 
 # Adding ScrollBar
-scroll_bar = tk.Scrollbar(content_text, cursor="arrow")
+#Horizontal
+hscroll_bar=tk.Scrollbar(content_text,cursor="arrow",orient='horizontal')
+content_text.configure(xscrollcommand=hscroll_bar.set)
+hscroll_bar.config(command=content_text.xview)
+hscroll_bar.pack(side="bottom",fill='x')
+#Vertical
+vertical_scrollbar_frame=tk.Frame(root)
+vertical_scrollbar_frame.pack(side="right",fill="y")
+scroll_bar = tk.Scrollbar(vertical_scrollbar_frame, cursor="arrow",orient='vertical')
 content_text.configure(yscrollcommand=scroll_bar.set)
 scroll_bar.config(command=content_text.yview)
 scroll_bar.pack(side="right", fill='y')
+
 # --------------------------------------------------------------------------------------
 
 
@@ -495,6 +530,7 @@ content_text.tag_configure('active_line', background='lightgrey')
 
 new_file()
 root.protocol('WM_DELETE_WINDOW', exit_box)
-
+#Packing content text
+content_text.pack(expand='yes', fill='both')
 # main Loop
 root.mainloop()
