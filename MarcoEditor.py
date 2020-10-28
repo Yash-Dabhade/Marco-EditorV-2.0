@@ -9,6 +9,8 @@ from tkinter import font,ttk
 # Global Variables Space
 file_name = None
 PROGRAM_NAME = "MarcoEditor"
+current_font_family='Arial'
+current_font_size=12
 # --------------------------------------------------------------------------------------
 
 root = tk.Tk()
@@ -377,33 +379,27 @@ alignright_icon=ImageTk.PhotoImage(Image.open('icons2/alignright.png'))
 alignright_btn=ttk.Button(customize_bar,image=alignright_icon)
 alignright_btn.grid(row=0,column=12,padx=5,pady=5)
 
-
-
 # --------------------------------------------------------------------------------------
-
-
-
 # MakingLineNumberBar
-linenumber_bar = tk.Text(root, width=4, padx=3, takefocus=0, border=0, background='lightblue', state='disabled',
+linenumber_bar = tk.Text(root, width=3, padx=3, takefocus=0, border=1, background='lightblue', state='disabled',
                          wrap='none')
 linenumber_bar.pack(side='left', fill='y')
+
+
 # --------------------------------------------------------------------------------------
-
-
-
 # Adding Text area
 content_text = tk.Text(root, wrap='word', undo=1,insertbackground="red")
 content_text.pack(expand='yes', fill='both')
 
 #Configure font family and fot size
-current_font_family='Arial'
-current_font_size=12
+
 def change_font(root):
     global current_font_size
     global current_font_family
     current_font_size=font_size.get()
     current_font_family=font_family.get()
     content_text.configure(font=(current_font_family,current_font_size))
+    linenumber_bar.configure(font=(current_font_family,current_font_size))
 content_text.configure(font=(current_font_family,current_font_size))
 font_box.bind("<<ComboboxSelected>>",change_font)
 font_size.bind("<<ComboboxSelected>>",change_font)
@@ -411,6 +407,7 @@ font_size.bind("<<ComboboxSelected>>",change_font)
 # content_text.configure(font=("Arial",12))
 
 # --------------------------------------------------------------------------------------
+
 # Adding ScrollBar
 scroll_bar = tk.Scrollbar(content_text)
 content_text.configure(yscrollcommand=scroll_bar.set)
