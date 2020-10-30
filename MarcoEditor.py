@@ -6,6 +6,13 @@ import os
 import tkinter.messagebox
 from tkinter import font, ttk
 from tkinter import colorchooser
+import ctypes
+
+# Code for default high dpi settings
+try:
+    ctypes.windll.shcore.SetProcessDpiAwareness(2)
+except:
+    ctypes.windll.user32.SetProcessDPIAware()
 
 # --------------------------------------------------------------------------------------
 # Global Variables Space
@@ -18,7 +25,7 @@ current_font_size = 12
 root = tk.Tk()
 # Main Code
 root.title("MarcoEditor")
-root.wm_iconbitmap('icon.png')
+root.wm_iconbitmap('icon.ico')
 root.geometry("850x450")
 root.minsize(250, 300)
 # --------------------------------------------------------------------------------------
@@ -37,7 +44,7 @@ redo_icon = ImageTk.PhotoImage(Image.open("menu_icons/redo.png"))
 
 # --------------------------------------------------------------------------------------
 
-# Defining Functions
+
 def cut():
     content_text.event_generate("<<Cut>>")
     return 'break'
@@ -111,13 +118,16 @@ def search_output(needle, if_ignore_case, content_text, search_toplevel, search_
     search_box.focus_set()
     search_toplevel.title('{} matches found'.format(matches_found))
 
-save_status=True
+
+save_status = True
+
+
 def new_file(event=None):
     global save_status
-    if save_status==False:
+    if save_status == False:
         if tk.messagebox.askokcancel("Unsaved?", "DO YOU WANT TO SAVE CURRENT FILE ?"):
             save()
-    root.title("Untitled-MacroEditor")
+    root.title("Untitled-MarcoEditor")
     global file_name
     file_name = None
     content_text.delete(1.0, tk.END)
@@ -161,7 +171,7 @@ def save_as(event=None):
 def save(event=None):
     global file_name
     global save_status
-    save_status=True
+    save_status = True
     if not file_name:
         save_as()
     else:
@@ -243,12 +253,13 @@ def changetheme(event=None):
     fgc, bgc = fg_bg_colors.split('.')
     content_text.config(fg=fgc, bg=bgc)
 
-#Making bold,italic and underline funtions and configurations
+
+# Making bold,italic and underline funtions and configurations
 def change_bold():
-    text_property=tk.font.Font(font=content_text['font'])
+    text_property = tk.font.Font(font=content_text['font'])
     print(text_property)
     if text_property.actual()['weight'] == 'normal':
-        content_text.config(font=(current_font_family,current_font_size,'bold'))
+        content_text.config(font=(current_font_family, current_font_size, 'bold'))
     elif text_property.actual()['weight'] == 'bold':
         content_text.config(font=(current_font_family, current_font_size, 'normal'))
 
@@ -261,6 +272,7 @@ def change_italic():
     elif text_property.actual()['slant'] == 'italic':
         content_text.config(font=(current_font_family, current_font_size, 'roman'))
 
+
 def change_underline():
     text_property = tk.font.Font(font=content_text['font'])
     print(text_property)
@@ -268,33 +280,85 @@ def change_underline():
         content_text.config(font=(current_font_family, current_font_size, 'underline'))
     elif text_property.actual()['underline'] == 1:
         content_text.config(font=(current_font_family, current_font_size, 'normal'))
+
+
 # --------------------------------------------------------------------------------------
 
-#Defining font color
+# Defining font color
 def font_color():
-    color=tk.colorchooser.askcolor()
+    color = tk.colorchooser.askcolor()
     content_text.configure(fg=color[1])
 
+
 # --------------------------------------------------------------------------------------
 
-#defining Alignment funtions
+# defining Alignment funtions
 def leftalignfun():
-    content=content_text.get(1.0,tk.END)
-    content_text.tag_config('left',justify=tk.LEFT)
-    content_text.delete(1.0,tk.END)
-    content_text.insert(tk.INSERT,content,'left')
+    content = content_text.get(1.0, tk.END)
+    content_text.tag_config('left', justify=tk.LEFT)
+    content_text.delete(1.0, tk.END)
+    content_text.insert(tk.INSERT, content, 'left')
+
 
 def rightalignfun():
-    content=content_text.get(1.0,tk.END)
-    content_text.tag_config('right',justify=tk.RIGHT)
-    content_text.delete(1.0,tk.END)
-    content_text.insert(tk.INSERT,content,'right')
+    content = content_text.get(1.0, tk.END)
+    content_text.tag_config('right', justify=tk.RIGHT)
+    content_text.delete(1.0, tk.END)
+    content_text.insert(tk.INSERT, content, 'right')
+
 
 def centeralignfun():
-    content=content_text.get(1.0,tk.END)
-    content_text.tag_config('center',justify=tk.CENTER)
-    content_text.delete(1.0,tk.END)
-    content_text.insert(tk.INSERT,content,'center')
+    content = content_text.get(1.0, tk.END)
+    content_text.tag_config('center', justify=tk.CENTER)
+    content_text.delete(1.0, tk.END)
+    content_text.insert(tk.INSERT, content, 'center')
+
+
+# --------------------------------------------------------------------------------------
+# Configure font family and font size
+
+def change_font(event=None):
+    global current_font_size
+    global current_font_family
+    current_font_size = font_size.get()
+    current_font_family = font_family.get()
+    content_text.configure(font=(current_font_family, current_font_size))
+    linenumber_bar.configure(font=(current_font_family, current_font_size))
+
+
+def show_cursor(event=None):
+    global show_cursor_info
+    if show_cursor_info.get() == 1:
+        show_cursor_info.set(0)
+        show_cursor_info_fun()
+    else:
+        show_cursor_info.set(1)
+        show_cursor_info_fun()
+
+
+def show_linenumber():
+    global show_line_number
+    if show_line_number.get() == 1:
+        show_line_number.set(0)
+        update_line_numbers()
+    else:
+        show_line_number.set(1)
+        update_line_numbers()
+
+
+def show_highlight():
+    global to_highlight_line
+    if to_highlight_line.get() == 0:
+        to_highlight_line.set(1)
+        toogle_highlight()
+    else:
+        to_highlight_line.set(0)
+        toogle_highlight()
+
+
+def show_info():
+    about_box()
+
 
 # --------------------------------------------------------------------------------------
 
@@ -391,13 +455,15 @@ root.config(menu=menu_bar)
 shorcut_bar = tk.Frame(root, height=25, background='light sea green')
 shorcut_bar.pack(expand='no', fill='x')
 # Creating Shortcut Buttons
-icons = ('new_file', 'open_file', 'save', 'cut', 'copy', 'paste', 'undo', 'redo', 'find_text')
+icons = ('new_file', 'open_file', 'save', 'cut', 'copy', 'paste', 'undo', 'redo', 'find_text', 'show_cursor'
+         , 'show_linenumber'
+         , 'show_highlight', 'show_info')
 for i, icon in enumerate(icons):
     tool_bar_icon = tk.PhotoImage(file='icons/{}.png'.format(icon))
     cmd = eval(icon)
     tool_bar = tk.Button(shorcut_bar, image=tool_bar_icon, command=cmd)
     tool_bar.image = tool_bar_icon
-    tool_bar.pack(side="left")
+    tool_bar.pack(side="left", fill='y')
 
 # -------------------------------------------------------------------------------------------------------
 # Making Customize Bar
@@ -421,63 +487,55 @@ font_size.grid(row=0, column=2, ipady=10, padx=10)
 
 # Making Bold Button
 bold_icon = ImageTk.PhotoImage(Image.open('icons2/bold.png'))
-bold_btn = ttk.Button(customize_bar, image=bold_icon,command=change_bold)
+bold_btn = ttk.Button(customize_bar, image=bold_icon, command=change_bold)
 bold_btn.grid(row=0, column=5, padx=2, pady=5)
 
 # MAking Italic Button
 italic_icon = ImageTk.PhotoImage(Image.open('icons2/italic.png'))
-italic_btn = ttk.Button(customize_bar, image=italic_icon,command=change_italic)
+italic_btn = ttk.Button(customize_bar, image=italic_icon, command=change_italic)
 italic_btn.grid(row=0, column=6, padx=2, pady=5)
 
 # MAking UnderLine Button
 underline_icon = ImageTk.PhotoImage(Image.open('icons2/underline.png'))
-underline_btn = ttk.Button(customize_bar, image=underline_icon,command=change_underline)
+underline_btn = ttk.Button(customize_bar, image=underline_icon, command=change_underline)
 underline_btn.grid(row=0, column=7, padx=2, pady=5)
 
 # MAking color button
 color_icon = ImageTk.PhotoImage(Image.open('icons2/color.png'))
-color_btn = ttk.Button(customize_bar, image=color_icon,command=font_color)
+color_btn = ttk.Button(customize_bar, image=color_icon, command=font_color)
 color_btn.grid(row=0, column=8, padx=22, pady=5)
 
 # MAking align left
 alignleft_icon = ImageTk.PhotoImage(Image.open('icons2/alignleft.png'))
-alignleft_btn = ttk.Button(customize_bar, image=alignleft_icon,command=leftalignfun)
-alignleft_btn.grid(row=0, column=10, padx=5, pady=5)
+alignleft_btn = ttk.Button(customize_bar, image=alignleft_icon, command=leftalignfun)
+alignleft_btn.grid(row=0, column=10, padx=2, pady=5)
 
 # MAking align center
 aligncenter_icon = ImageTk.PhotoImage(Image.open('icons2/aligncenter.png'))
-aligncenter_btn = ttk.Button(customize_bar, image=aligncenter_icon,command=centeralignfun)
-aligncenter_btn.grid(row=0, column=11, padx=5, pady=5)
+aligncenter_btn = ttk.Button(customize_bar, image=aligncenter_icon, command=centeralignfun)
+aligncenter_btn.grid(row=0, column=11, padx=2, pady=5)
 
 # MAking align right
 alignright_icon = ImageTk.PhotoImage(Image.open('icons2/alignright.png'))
-alignright_btn = ttk.Button(customize_bar, image=alignright_icon,command=rightalignfun)
-alignright_btn.grid(row=0, column=12, padx=5, pady=5)
-
+alignright_btn = ttk.Button(customize_bar, image=alignright_icon, command=rightalignfun)
+alignright_btn.grid(row=0, column=12, padx=2, pady=5)
 
 # --------------------------------------------------------------------------------------
+# Making context_Frame
+context_frame = tk.Frame(root)
+# __________________________________
+
 # MakingLineNumberBar
-linenumber_bar = tk.Text(root, width=3, padx=3, takefocus=0, border=1, background='lightblue', state='disabled',
+linenumber_bar = tk.Text(context_frame, width=3, padx=3, takefocus=0, border=1, background='lightblue',
+                         state='disabled',
                          wrap='none')
 linenumber_bar.configure(font=(current_font_family, current_font_size))
 linenumber_bar.pack(side='left', fill='y')
 
 # --------------------------------------------------------------------------------------
+
 # Adding Text area
-content_text = tk.Text(root, wrap='word', undo=1, insertbackground="red")
-
-
-
-# Configure font family and font size
-
-def change_font(event=None):
-    global current_font_size
-    global current_font_family
-    current_font_size = font_size.get()
-    current_font_family = font_family.get()
-    content_text.configure(font=(current_font_family, current_font_size))
-    linenumber_bar.configure(font=(current_font_family, current_font_size))
-
+content_text = tk.Text(context_frame, wrap='word', undo=1, insertbackground="red")
 
 # Setting Default Value
 content_text.configure(font=(current_font_family, current_font_size))
@@ -488,15 +546,15 @@ font_size.bind("<<ComboboxSelected>>", change_font)
 # --------------------------------------------------------------------------------------
 
 # Adding ScrollBar
-#Horizontal
-hscroll_bar=tk.Scrollbar(content_text,cursor="arrow",orient='horizontal')
+# Horizontal
+hscroll_bar = tk.Scrollbar(content_text, cursor="arrow", orient='horizontal')
 content_text.configure(xscrollcommand=hscroll_bar.set)
 hscroll_bar.config(command=content_text.xview)
-hscroll_bar.pack(side="bottom",fill='x')
-#Vertical
-vertical_scrollbar_frame=tk.Frame(root)
-vertical_scrollbar_frame.pack(side="right",fill="y")
-scroll_bar = tk.Scrollbar(vertical_scrollbar_frame, cursor="arrow",orient='vertical')
+hscroll_bar.pack(side="bottom", fill='x')
+# Vertical
+vertical_scrollbar_frame = tk.Frame(root)
+vertical_scrollbar_frame.pack(side="right", fill="y")
+scroll_bar = tk.Scrollbar(vertical_scrollbar_frame, cursor="arrow", orient='vertical')
 content_text.configure(yscrollcommand=scroll_bar.set)
 scroll_bar.config(command=content_text.yview)
 scroll_bar.pack(side="right", fill='y')
@@ -530,7 +588,9 @@ content_text.tag_configure('active_line', background='lightgrey')
 
 new_file()
 root.protocol('WM_DELETE_WINDOW', exit_box)
-#Packing content text
+# Packing content text
 content_text.pack(expand='yes', fill='both')
+# PAcking frame
+context_frame.pack(fill='both', expand='yes')
 # main Loop
 root.mainloop()
