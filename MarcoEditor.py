@@ -455,7 +455,7 @@ root.config(menu=menu_bar)
 shorcut_bar = tk.Frame(root, height=25, background='light sea green')
 shorcut_bar.pack(expand='no', fill='x')
 # Creating Shortcut Buttons
-icons = ('new_file', 'open_file', 'save', 'cut', 'copy', 'paste', 'undo', 'redo', 'find_text', 'show_cursor'
+icons = ('new_file', 'open_file', 'save','save_as', 'cut', 'copy', 'paste', 'undo', 'redo', 'find_text', 'show_cursor'
          , 'show_linenumber'
          , 'show_highlight', 'show_info')
 for i, icon in enumerate(icons):
